@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using TheBookHeaven.Models;
-using TheBookHeaven; // Make sure this namespace includes MyDbContext
+using TheBookHeaven; 
 using System.Linq;
 
 namespace TheBookHeaven.Controllers
