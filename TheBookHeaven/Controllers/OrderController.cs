@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-
 namespace TheBookHeaven.Controllers
 {
     public class OrderController : Controller
@@ -7,7 +6,7 @@ namespace TheBookHeaven.Controllers
         // Renders the MyOrder.cshtml view
         public IActionResult MyOrder()
         {
-            return View();
+            return View(); 
         }
     }
 }
