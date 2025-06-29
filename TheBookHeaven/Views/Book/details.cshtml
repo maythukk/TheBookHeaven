@@ -1,0 +1,25 @@
+﻿@model TheBookHeaven.Models.Book
+
+@{
+    ViewData["Title"] = "Book Details";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-4">
+            <img src="@Model.ImageUrl" class="img-fluid rounded shadow-sm" alt="@Model.Title" />
+        </div>
+        <div class="col-md-8">
+            <h2>@Model.Title</h2>
+            <p class="text-muted">$@Model.Price</p>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse efficitur lorem ut nulla iaculis dignissim.</p>
+
+            <form asp-controller="Books" asp-action="AddToCart" method="post">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <button type="submit" class="btn btn-success mt-3">
+                    <i class="bi bi-cart-plus"></i> Add to Cart
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

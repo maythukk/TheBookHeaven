@@ -29,8 +29,8 @@
                 <!-- Icons (mobile view) -->
                 <div class="d-flex d-lg-none">
                     <a class="nav-link" href="#"><i class="bi bi-search"></i></a>
-                    <a class="nav-link" href="#"><i class="bi bi-cart"></i></a>
-                    <a class="nav-link" href="#"><i class="bi bi-person"></i></a>
+                    <a class="nav-link" asp-controller="Book" asp-action="Cart"><i class="bi bi-cart"></i></a>
+                    <a class="nav-link" asp-controller="Account" asp-action="Login"><i class="bi bi-person"></i></a>
                 </div>
 
                 <!-- Navbar Toggle -->
@@ -63,8 +63,8 @@
                     <!-- Icons for desktop -->
                     <div class="d-none d-lg-flex">
                         <a class="nav-link" href="#"><i class="bi bi-search"></i></a>
-                        <a class="nav-link" href="#"><i class="bi bi-cart"></i></a>
-                        <a class="nav-link" href="#"><i class="bi bi-person"></i></a>
+                        <a class="nav-link" asp-controller="Book" asp-action="Cart"><i class="bi bi-cart"></i></a>
+                        <a class="nav-link" asp-controller="Account" asp-action="Login"><i class="bi bi-person"></i></a>
                     </div>
                 </div>
             </div>

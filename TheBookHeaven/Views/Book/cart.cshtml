@@ -1,0 +1,51 @@
+﻿@model List<TheBookHeaven.Models.CartItem>
+
+@{
+    ViewData["Title"] = "My Cart";
+}
+
+<div class="container mt-4">
+    <h3 class="mb-4">My Cart</h3>
+
+    @if (!Model.Any())
+    {
+        <p>Your cart is empty.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table align-middle text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>Image</th>
+                        <th>Title</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <img src="@item.Book.ImageUrl" alt="@item.Book.Title" style="width: 70px; height: 100px; object-fit: cover;" class="rounded shadow-sm" />
+                            </td>
+                            <td>@item.Book.Title</td>
+                            <td>$@item.Book.Price</td>
+                            <td>@item.Quantity</td>
+                            <td>$@(item.Book.Price * item.Quantity)</td>
+                            <td>
+                                <form asp-action="RemoveFromCart" asp-controller="Book" method="post">
+                                    <input type="hidden" name="id" value="@item.Book.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
