@@ -27,6 +27,11 @@
                         <div class="card-body p-2">
                             <h6 class="card-title">@book.Title</h6>
                             <p class="card-text text-muted small">$@book.Price</p>
+                            <div class="d-flex justify-content-end">
+                                <a asp-controller="Book" asp-action="AddToCart" asp-route-id="@book.Id" class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-cart-plus"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -49,6 +54,11 @@
                         <div class="card-body p-2">
                             <h6 class="card-title">@book.Title</h6>
                             <p class="card-text text-muted small">$@book.Price</p>
+                            <div class="d-flex justify-content-end">
+                                <a asp-controller="Book" asp-action="AddToCart" asp-route-id="@book.Id" class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-cart-plus"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -71,6 +81,11 @@
                         <div class="card-body p-2">
                             <h6 class="card-title">@book.Title</h6>
                             <p class="card-text text-muted small">$@book.Price</p>
+                            <div class="d-flex justify-content-end">
+                                <a asp-controller="Book" asp-action="AddToCart" asp-route-id="@book.Id" class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-cart-plus"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
