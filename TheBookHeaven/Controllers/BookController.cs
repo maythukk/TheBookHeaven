@@ -34,15 +34,15 @@ namespace TheBookHeaven.Controllers
         }
 
         [HttpGet]
-        public IActionResult AddToCart(int id)
+        public JsonResult AddToCart(int id)
         {
             var book = _context.Books.FirstOrDefault(b => b.Id == id);
             if (book == null)
-                return NotFound();
+                return Json(new { success = false, message = "Book not found." });
 
             List<CartItem> cart = HttpContext.Session.GetObjectFromJson<List<CartItem>>("Cart") ?? new List<CartItem>();
-
             var existingItem = cart.FirstOrDefault(ci => ci.Book.Id == id);
+
             if (existingItem != null)
             {
                 existingItem.Quantity++;
@@ -53,7 +53,7 @@ namespace TheBookHeaven.Controllers
             }
 
             HttpContext.Session.SetObjectAsJson("Cart", cart);
-            return RedirectToAction("Index", "Home");
+            return Json(new { success = true, message = "1 item added to your cart." });
         }
 
         public IActionResult Cart()
@@ -75,6 +75,11 @@ namespace TheBookHeaven.Controllers
             }
 
             return RedirectToAction("Cart");
+        }
+        public IActionResult Index()
+        {
+            var allBooks = _context.Books.ToList();
+            return View("Book", allBooks); 
         }
 
     }
