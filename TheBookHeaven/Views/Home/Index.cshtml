@@ -4,7 +4,7 @@
     ViewData["Title"] = "Home";
 }
 
-<div class="container-fluid px-4">
+<div class="px-4">
     <!-- Hero Section -->
     <div class="text-center mb-5">
         <img src="~/images/banner.jpeg" class="img-fluid rounded shadow-sm" alt="Welcome Banner" style="max-height: 450px; object-fit: cover;" />
@@ -12,84 +12,35 @@
         <p class="text-muted">Discover the best books in every category.</p>
     </div>
 
-    <!-- Best Sellers -->
-    <div class="mb-5">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h3>Best Sellers</h3>
-            <a href="#" class="btn btn-outline-primary btn-sm">View All</a>
-        </div>
-        <div class="row">
-            @foreach (var book in Model.Where(b => b.Category == "Best Sellers"))
-            {
-                <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-4">
-                    <div class="card h-100" style="max-width: 200px;">
-                        <img src="@book.ImageUrl" class="card-img-top" alt="@book.Title" style="width: 100%; height: auto; object-fit: cover;" />
-                        <div class="card-body p-2">
-                            <h6 class="card-title">@book.Title</h6>
-                            <p class="card-text text-muted small">$@book.Price</p>
-                            <div class="d-flex justify-content-end">
-                                <a asp-controller="Book" asp-action="AddToCart" asp-route-id="@book.Id" class="btn btn-sm btn-outline-success">
-                                    <i class="bi bi-cart-plus"></i>
-                                </a>
+    <!-- Section Template -->
+    @foreach (var category in new[] { "Best Sellers", "Fiction", "Non-Fiction" })
+    {
+        <div class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3>@category</h3>
+                <a href="#" class="btn btn-outline-primary btn-sm">View All</a>
+            </div>
+            <div class="row">
+                @foreach (var book in Model.Where(b => b.Category == category))
+                {
+                    <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-4">
+                        <div class="card h-100 d-flex flex-column shadow-sm">
+                            <img src="@book.ImageUrl"
+                                 class="card-img-top"
+                                 alt="@book.Title"
+                                 style="height: 250px; object-fit: cover;" />
+                            <div class="card-body d-flex flex-column p-2">
+                                <h6 class="card-title text-truncate" title="@book.Title">@book.Title</h6>
+                                <p class="card-text text-muted small mb-2">$@book.Price</p>
+                                <button onclick="addToCart(@book.Id)"
+                                        class="btn btn-outline-primary btn-sm mt-auto w-100">
+                                    <i class="bi bi-cart-plus"></i> Add to Cart
+                                </button>
                             </div>
                         </div>
                     </div>
-                </div>
-            }
+                }
+            </div>
         </div>
-    </div>
-
-    <!-- Fiction -->
-    <div class="mb-5">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h3>Fiction</h3>
-            <a href="#" class="btn btn-outline-primary btn-sm">View All</a>
-        </div>
-        <div class="row">
-            @foreach (var book in Model.Where(b => b.Category == "Fiction"))
-            {
-                <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-4">
-                    <div class="card h-100" style="max-width: 200px;">
-                        <img src="@book.ImageUrl" class="card-img-top" alt="@book.Title" style="width: 100%; height: auto; object-fit: cover;" />
-                        <div class="card-body p-2">
-                            <h6 class="card-title">@book.Title</h6>
-                            <p class="card-text text-muted small">$@book.Price</p>
-                            <div class="d-flex justify-content-end">
-                                <a asp-controller="Book" asp-action="AddToCart" asp-route-id="@book.Id" class="btn btn-sm btn-outline-success">
-                                    <i class="bi bi-cart-plus"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
-    </div>
-
-    <!-- Non-Fiction -->
-    <div class="mb-5 pb-5" style="margin-bottom: 80px !important;">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h3>Non-Fiction</h3>
-            <a href="#" class="btn btn-outline-primary btn-sm">View All</a>
-        </div>
-        <div class="row">
-            @foreach (var book in Model.Where(b => b.Category == "Non-Fiction"))
-            {
-                <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-4">
-                    <div class="card h-100" style="max-width: 200px;">
-                        <img src="@book.ImageUrl" class="card-img-top" alt="@book.Title" style="width: 100%; height: auto; object-fit: cover;" />
-                        <div class="card-body p-2">
-                            <h6 class="card-title">@book.Title</h6>
-                            <p class="card-text text-muted small">$@book.Price</p>
-                            <div class="d-flex justify-content-end">
-                                <a asp-controller="Book" asp-action="AddToCart" asp-route-id="@book.Id" class="btn btn-sm btn-outline-success">
-                                    <i class="bi bi-cart-plus"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
-    </div>
+    }
 </div>
