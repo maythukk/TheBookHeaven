@@ -99,5 +99,22 @@ namespace TheBookHeaven.Controllers
             TempData["Message"] = "Account registered successfully. Please log in.";
             return RedirectToAction("Login");
         }
+
+        public IActionResult Profile()
+        {
+            // Ensure user is logged in
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+                return RedirectToAction("Login");
+
+            // Get user from database
+            var user = _context.Users.FirstOrDefault(u => u.Username == username);
+
+            if (user == null)
+                return RedirectToAction("Login");
+
+            return View(user);
+        }
+
     }
 }

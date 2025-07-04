@@ -1,0 +1,20 @@
+﻿@model TheBookHeaven.Models.User
+
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<div class="container mt-5" style="max-width: 600px;">
+    <h3 class="mb-4 text-center">Your Profile</h3>
+
+    <div class="card">
+        <div class="card-body">
+            <p><strong>Username:</strong> @Model.Username</p>
+            <p><strong>Email:</strong> @Model.Email</p>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a asp-action="Logout" class="btn btn-outline-danger">Logout</a>
+    </div>
+</div>
