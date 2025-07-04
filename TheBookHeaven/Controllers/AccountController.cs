@@ -84,10 +84,40 @@ namespace TheBookHeaven.Controllers
         }
 
         // Show Register view for new customers
-        
+        [HttpGet]
+        public IActionResult Register()
+        {
+            return View();
+        }
 
         // Handle POST Register
-        
+        [HttpPost]
+        public IActionResult Register(User user)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Error = "Please fill all fields correctly.";
+                return View(user);
+            }
+
+            // Check if username already exists
+            var existingUser = _context.Users.FirstOrDefault(u => u.Username == user.Username);
+            if (existingUser != null)
+            {
+                ViewBag.Error = "Username already exists. Please choose another.";
+                return View(user);
+            }
+
+            // Set default role
+            user.Role = "Customer";
+
+            // Save to DB
+            _context.Users.Add(user);
+            _context.SaveChanges();
+
+            ViewBag.Success = "Account registered successfully. Please log in.";
+            return RedirectToAction("Login");
+        }
 
     }
 }

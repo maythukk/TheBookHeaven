@@ -1,0 +1,45 @@
+﻿@model TheBookHeaven.Models.User
+
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="container mt-5" style="max-width: 500px;">
+    <h3 class="text-center mb-4">Create a Customer Account</h3>
+
+    <form asp-controller="Account" asp-action="Register" method="post">
+        <!-- Show model-level validation summary -->
+        @Html.ValidationSummary(false, "", new { @class = "text-danger text-center" })
+
+        <div class="mb-3">
+            <label asp-for="Username" class="form-label"></label>
+            <input asp-for="Username" class="form-control" />
+            <span asp-validation-for="Username" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label"></label>
+            <input asp-for="Password" class="form-control" type="password" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+        @* Optional server-side fallback (ViewBag) *@
+        <div class="text-danger text-center">@ViewBag.Error</div>
+        <div class="text-success text-center">@ViewBag.Success</div>
+
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary">Register</button>
+            <a asp-action="Login" class="btn btn-outline-secondary">Back to Login</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
