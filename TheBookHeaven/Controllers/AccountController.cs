@@ -34,20 +34,10 @@ namespace TheBookHeaven.Controllers
             return View("Login");
         }
 
-        // Show Employee login view
-        [HttpGet]
-        public IActionResult EmployeeLogin()
-        {
-            ViewBag.Role = "Employee";
-            ViewBag.Title = "Employee Login";
-            return View("Login");
-        }
-
-        // Handle Login POST request for all roles
+        // Handle Login POST request for Admin and Customer
         [HttpPost]
         public IActionResult Login(string Username, string Password, string Role)
         {
-            // Check user from database
             var user = _context.Users.FirstOrDefault(u =>
                 u.Username == Username &&
                 u.Password == Password &&
@@ -55,26 +45,20 @@ namespace TheBookHeaven.Controllers
 
             if (user != null)
             {
-                // Valid login
                 HttpContext.Session.SetString("Username", user.Username);
                 HttpContext.Session.SetString("Role", user.Role);
 
-                // Redirect based on role
                 if (user.Role == "Admin")
                     return RedirectToAction("Dashboard", "Admin");
-                else if (user.Role == "Employee")
-                    return RedirectToAction("Inventory", "Employee");
-                else
+                else // Customer
                     return RedirectToAction("Index", "Home");
             }
 
-            // Login failed
             ViewBag.Error = "Invalid username or password.";
             ViewBag.Role = Role;
             ViewBag.Title = $"{Role} Login";
             return View();
         }
-
 
         // Logout and clear session
         public IActionResult Logout()
@@ -100,7 +84,6 @@ namespace TheBookHeaven.Controllers
                 return View(user);
             }
 
-            // Check if username already exists
             var existingUser = _context.Users.FirstOrDefault(u => u.Username == user.Username);
             if (existingUser != null)
             {
@@ -108,16 +91,13 @@ namespace TheBookHeaven.Controllers
                 return View(user);
             }
 
-            // Set default role
             user.Role = "Customer";
 
-            // Save to DB
             _context.Users.Add(user);
             _context.SaveChanges();
 
-            ViewBag.Success = "Account registered successfully. Please log in.";
+            TempData["Message"] = "Account registered successfully. Please log in.";
             return RedirectToAction("Login");
         }
-
     }
 }

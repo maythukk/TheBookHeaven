@@ -1,32 +1,46 @@
 ﻿@{
     ViewData["Title"] = ViewBag.Title ?? "Login";
-    string role = ViewBag.Role ?? "Customer";
+    string role = ViewBag.Role ?? "Customer"; // Default to Customer
 }
 
 <div class="container mt-5" style="max-width: 400px;">
     <h3 class="text-center mb-4">@ViewData["Title"]</h3>
 
+    <!-- Show error message if login fails -->
     @if (ViewBag.Error != null)
     {
         <div class="alert alert-danger text-center">@ViewBag.Error</div>
     }
 
+    <!-- Show success message after registration -->
+    @if (ViewBag.Success != null)
+    {
+        <div class="alert alert-success text-center">@ViewBag.Success</div>
+    }
+
+    <!-- Login form -->
     <form asp-action="Login" method="post">
+        <!-- Hidden input to track role (Admin or Customer) -->
         <input type="hidden" name="Role" value="@role" />
 
+        <!-- Username input -->
         <div class="mb-3">
             <label for="Username" class="form-label">Username</label>
             <input type="text" class="form-control" name="Username" required />
         </div>
+
+        <!-- Password input -->
         <div class="mb-3">
             <label for="Password" class="form-label">Password</label>
             <input type="password" class="form-control" name="Password" required />
         </div>
 
+        <!-- Submit button -->
         <div class="d-grid mb-3">
             <button type="submit" class="btn btn-primary">Login</button>
         </div>
 
+        <!-- Register link for customers only -->
         @if (role == "Customer")
         {
             <div class="text-center">
@@ -35,6 +49,7 @@
             </div>
         }
 
+        <!-- Role switching links (only show what’s not active) -->
         <div class="text-center mt-3">
             @if (role != "Admin")
             {
@@ -42,22 +57,10 @@
 
                 <br />
             }
-            @if (role != "Employee")
-            {
-                <a asp-action="EmployeeLogin">Login as Employee</a>
-
-                <br />
-            }
             @if (role != "Customer")
             {
                 <a asp-action="Login">Login as Customer</a>
             }
-
-            @if (ViewBag.Success != null)
-            {
-                <div class="alert alert-success text-center">@ViewBag.Success</div>
-            }
-
         </div>
     </form>
 </div>
