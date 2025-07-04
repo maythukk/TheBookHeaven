@@ -1,0 +1,42 @@
+﻿@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Welcome, @ViewBag.Username (Admin)</h2>
+
+    <div class="row g-4">
+        <!-- Manage Books -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Manage Books</h5>
+                    <p class="card-text">Add, edit or delete books in the store.</p>
+                    <a href="#" class="btn btn-primary">Go</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manage Users -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Manage Users</h5>
+                    <p class="card-text">View and manage customer accounts.</p>
+                    <a href="#" class="btn btn-primary">Go</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Orders -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">View Orders</h5>
+                    <p class="card-text">Update order statuses and view order history.</p>
+                    <a href="#" class="btn btn-primary">Go</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
