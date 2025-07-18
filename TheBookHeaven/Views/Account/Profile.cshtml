@@ -4,17 +4,70 @@
     ViewData["Title"] = "Profile";
 }
 
-<div class="container mt-5" style="max-width: 600px;">
+<div class="container mt-5" style="max-width: 500px;">
     <h3 class="mb-4 text-center">Your Profile</h3>
 
-    <div class="card">
-        <div class="card-body">
-            <p><strong>Username:</strong> @Model.Username</p>
-            <p><strong>Email:</strong> @Model.Email</p>
+    <div class="card shadow-sm">
+        <div class="card-body text-center">
+            <!-- Profile Picture Placeholder -->
+            <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
+                 alt="Profile Picture" class="rounded-circle mb-3"
+                 style="width: 150px; height: 150px; object-fit: cover;" />
+
+            <!-- Username with edit -->
+            <h5 class="card-title d-flex justify-content-center align-items-center">
+
+                <span id="username-text" style="text-decoration: underline; cursor: pointer;">
+                    @Model.Username
+                </span>
+
+                <form method="post" asp-action="EditUsername" asp-controller="Account"
+                      id="username-form" style="display:none; margin-left: 8px;">
+                    <input type="text" name="username" value="@Model.Username"
+                           style="width: 150px;" required />
+                    <button type="submit" class="btn btn-sm btn-success ms-1">Save</button>
+                    <button type="button" id="cancel-edit" class="btn btn-sm btn-secondary ms-1">Cancel</button>
+                </form>
+
+                <i id="edit-icon" class="bi bi-pencil ms-2" style="cursor:pointer;"></i>
+            </h5>
+
+            <!-- Email -->
+            <p class="text-muted mt-3">
+                <i class="bi bi-envelope-fill me-2"></i> @Model.Email
+            </p>
+
+            <!-- Change Password Button -->
+            <a asp-action="ChangePassword" class="btn btn-primary mt-3">Change Password</a>
+        </div>
+
+        <!-- Logout Button -->
+        <div class="text-center mb-3">
+            <a asp-action="Logout" class="btn btn-outline-danger">Logout</a>
         </div>
     </div>
-
-    <div class="text-center mt-4">
-        <a asp-action="Logout" class="btn btn-outline-danger">Logout</a>
-    </div>
 </div>
+
+@section Scripts {
+    <script>
+        const editIcon = document.getElementById('edit-icon');
+        const usernameText = document.getElementById('username-text');
+        const usernameForm = document.getElementById('username-form');
+        const cancelBtn = document.getElementById('cancel-edit');
+
+        // Show form, hide text and icon
+        editIcon.addEventListener('click', () => {
+            usernameText.style.display = 'none';
+            editIcon.style.display = 'none';
+            usernameForm.style.display = 'inline-block';
+            usernameForm.querySelector('input[name="username"]').focus();
+        });
+
+        // Cancel editing then revert to original display
+        cancelBtn.addEventListener('click', () => {
+            usernameForm.style.display = 'none';
+            usernameText.style.display = 'inline';
+            editIcon.style.display = 'inline-block';
+        });
+    </script>
+}
