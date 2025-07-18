@@ -86,7 +86,45 @@ namespace TheBookHeaven.Controllers
             return View();
         }
 
-        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Register(User model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            // Check if username or email already exists
+            bool usernameExists = _context.Users.Any(u => u.Username == model.Username);
+            bool emailExists = _context.Users.Any(u => u.Email == model.Email);
+
+            if (usernameExists)
+            {
+                ViewBag.Error = "Username already exists.";
+                return View(model);
+            }
+
+            if (emailExists)
+            {
+                ViewBag.Error = "Email already exists.";
+                return View(model);
+            }
+
+            // Hash the password
+            var hasher = new PasswordHasher<User>();
+            model.Password = hasher.HashPassword(model, model.Password);
+
+            // Set default role
+            model.Role = "Customer";
+
+            _context.Users.Add(model);
+            _context.SaveChanges();
+
+            TempData["Message"] = "Account created successfully. You can now log in.";
+            return RedirectToAction("Login");
+        }
+
         public IActionResult Profile()
         {
             // Ensure user is logged in
