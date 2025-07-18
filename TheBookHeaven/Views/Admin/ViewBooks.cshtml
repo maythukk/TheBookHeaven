@@ -1,0 +1,44 @@
+﻿@model List<TheBookHeaven.Models.Book>
+
+@{
+    ViewData["Title"] = "Admin - View Books";
+}
+
+<h2>Book List (Admin View)</h2>
+
+<div class="d-flex justify-content-end mb-3">
+    <a href="@Url.Action("AddBook", "Admin")" class="btn btn-success">
+        <i class="bi bi-plus-lg"></i> Add Book
+    </a>
+</div>
+
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var book in Model)
+        {
+            <tr>
+                <td>@book.Title</td>
+                <td>@book.Category</td>
+                <td>$@book.Price</td>
+                <td>
+                    <a href="@Url.Action("Edit", "Admin", new { id = book.Id })" class="btn btn-sm btn-primary">Edit</a>
+
+                    <a href="@Url.Action("DeleteBook", "Admin", new { id = book.Id })"
+                       class="btn btn-sm btn-danger"
+                       onclick="return confirm('Are you sure you want to delete this book?');">
+                        Delete
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
