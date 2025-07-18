@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Views\Account\gwub2ybt.3xt~" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="MyDbContext.cs" />
   </ItemGroup>
 
