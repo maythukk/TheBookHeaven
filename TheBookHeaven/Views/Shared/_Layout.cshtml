@@ -76,8 +76,26 @@
                                     <i class="bi bi-person-circle"></i> @Context.Session.GetString("Username")
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">Profile</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Logout">Logout</a></li>
+                                    @* Check if the logged-in user is an Admin *@
+                                    @if (Context.Session.GetString("Role") == "Admin")
+                                    {
+                                        <li>
+                                            @* Show Dashboard link for Admin *@
+                                            <a class="dropdown-item" asp-controller="Admin" asp-action="Dashboard">Dashboard</a>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li>
+                                            @* Show Profile link for normal users *@
+                                            <a class="dropdown-item" asp-controller="Account" asp-action="Profile">Profile</a>
+                                        </li>
+                                    }
+
+                                    <li>
+                                        @* Logout option for all users *@
+                                        <a class="dropdown-item" asp-controller="Account" asp-action="Logout">Logout</a>
+                                    </li>
                                 </ul>
                             </div>
                         }
