@@ -39,22 +39,33 @@ namespace TheBookHeaven.Controllers
         [HttpPost]
         public IActionResult Login(string Username, string Password, string Role)
         {
+            // Find user by username and role
             var user = _context.Users.FirstOrDefault(u =>
                 u.Username == Username &&
-                u.Password == Password &&
                 u.Role == Role);
 
             if (user != null)
             {
-                HttpContext.Session.SetString("Username", user.Username);
-                HttpContext.Session.SetString("Role", user.Role);
+                var hasher = new PasswordHasher<User>();
 
-                if (user.Role == "Admin")
-                    return RedirectToAction("Dashboard", "Admin");
-                else // Customer
-                    return RedirectToAction("Index", "Home");
+                // Check if password matches hashed password
+                var result = hasher.VerifyHashedPassword(user, user.Password, Password);
+
+                if (result == PasswordVerificationResult.Success)
+                {
+                    // Set session info
+                    HttpContext.Session.SetString("Username", user.Username);
+                    HttpContext.Session.SetString("Role", user.Role);
+
+                    // Redirect by role
+                    if (user.Role == "Admin")
+                        return RedirectToAction("Dashboard", "Admin");
+                    else
+                        return RedirectToAction("Index", "Home");
+                }
             }
 
+            // Login failed
             ViewBag.Error = "Invalid username or password.";
             ViewBag.Role = Role;
             ViewBag.Title = $"{Role} Login";
@@ -75,37 +86,6 @@ namespace TheBookHeaven.Controllers
             return View();
         }
 
-        // Handle POST Register
-        [HttpPost]
-        public IActionResult Register(User user)
-        {
-            if (!ModelState.IsValid)
-            {
-                ViewBag.Error = "Please fill all fields correctly.";
-                return View(user);
-            }
-
-            var existingUser = _context.Users.FirstOrDefault(u => u.Username == user.Username);
-            if (existingUser != null)
-            {
-                ViewBag.Error = "Username already exists. Please choose another.";
-                return View(user);
-            }
-
-            // Set default role
-            user.Role = "Customer";
-
-            // Hash the password before saving (to delete)
-            var hasher = new PasswordHasher<User>();
-            user.Password = hasher.HashPassword(user, user.Password);
-
-            // Save user
-            _context.Users.Add(user);
-            _context.SaveChanges();
-
-            TempData["Message"] = "Account registered successfully. Please log in.";
-            return RedirectToAction("Login");
-        }
 
         public IActionResult Profile()
         {
@@ -123,5 +103,73 @@ namespace TheBookHeaven.Controllers
             return View(user);
         }
 
+        // GET: ChangePassword
+        public IActionResult ChangePassword()
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+                return RedirectToAction("Login");
+
+            return View();
+        }
+
+        // POST: ChangePassword
+        [HttpPost]
+        public IActionResult ChangePassword(ChangePassword model)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username)) return RedirectToAction("Login");
+
+            var user = _context.Users.FirstOrDefault(u => u.Username == username);
+            if (user == null) return RedirectToAction("Login");
+
+            // Use PasswordHasher to verify old password
+            var hasher = new PasswordHasher<User>();
+            var result = hasher.VerifyHashedPassword(user, user.Password, model.OldPassword);
+
+            if (result == PasswordVerificationResult.Failed)
+            {
+                ViewBag.Error = "Old password is incorrect.";
+                return View(model);
+            }
+
+            // Check if new passwords match
+            if (model.NewPassword != model.ConfirmPassword)
+            {
+                ViewBag.Error = "New passwords do not match.";
+                return View(model);
+            }
+
+            // Hash and update new password
+            user.Password = hasher.HashPassword(user, model.NewPassword);
+            _context.SaveChanges();
+
+            ViewBag.Success = "Password changed successfully!";
+            return RedirectToAction("Profile");
+        }
+
+        // POST: Update username
+        [HttpPost]
+        public IActionResult EditUsername(string username)
+        {
+            var currentUsername = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(currentUsername))
+                return RedirectToAction("Login");
+
+            var user = _context.Users.FirstOrDefault(u => u.Username == currentUsername);
+            if (user == null)
+                return RedirectToAction("Login");
+
+            if (!string.IsNullOrWhiteSpace(username))
+            {
+                user.Username = username;
+                _context.SaveChanges();
+
+                // Update session with new username
+                HttpContext.Session.SetString("Username", username);
+            }
+
+            return RedirectToAction("Profile");
+        }
     }
 }
