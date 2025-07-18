@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using TheBookHeaven.Models;
-using TheBookHeaven;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using System.Linq;
+using TheBookHeaven;
+using TheBookHeaven.Models;
 
 namespace TheBookHeaven.Controllers
 {
@@ -91,8 +92,14 @@ namespace TheBookHeaven.Controllers
                 return View(user);
             }
 
+            // Set default role
             user.Role = "Customer";
 
+            // Hash the password before saving (to delete)
+            var hasher = new PasswordHasher<User>();
+            user.Password = hasher.HashPassword(user, user.Password);
+
+            // Save user
             _context.Users.Add(user);
             _context.SaveChanges();
 
