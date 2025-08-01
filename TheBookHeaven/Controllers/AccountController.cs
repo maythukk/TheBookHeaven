@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
+using System.Security.Claims;
 using TheBookHeaven;
 using TheBookHeaven.Models;
 
@@ -37,7 +40,7 @@ namespace TheBookHeaven.Controllers
 
         // Handle Login POST request for Admin and Customer
         [HttpPost]
-        public IActionResult Login(string Username, string Password, string Role)
+        public async Task<IActionResult> Login(string Username, string Password, string Role)
         {
             // Find user by username and role
             var user = _context.Users.FirstOrDefault(u =>
@@ -56,6 +59,22 @@ namespace TheBookHeaven.Controllers
                     // Set session info
                     HttpContext.Session.SetString("Username", user.Username);
                     HttpContext.Session.SetString("Role", user.Role);
+                    HttpContext.Session.SetInt32("UserId", user.Id); // Store user ID in session
+
+                    // Create claims for the logged-in user
+                    var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.Username),  // Set Username as the Identity Name
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // Add user ID claim
+                new Claim(ClaimTypes.Role, user.Role),      // Set Role as the Identity Role
+                new Claim("UserId", user.Id.ToString())     // Custom claim for user ID
+            };
+
+                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                    var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+
+                    // Sign in the user (this persists the authentication)
+                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
 
                     // Redirect by role
                     if (user.Role == "Admin")
@@ -72,11 +91,17 @@ namespace TheBookHeaven.Controllers
             return View();
         }
 
-        // Logout and clear session
-        public IActionResult Logout()
+        // Logout method
+        [HttpGet, HttpPost]
+        public async Task<IActionResult> Logout()
         {
+            // Sign out from cookie authentication
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            // Clear all session data
             HttpContext.Session.Clear();
-            return RedirectToAction("Login");
+
+            return RedirectToAction("Index", "Home");
         }
 
         // Show Register view for new customers
