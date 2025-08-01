@@ -368,5 +368,51 @@ namespace TheBookHeaven.Controllers
             ViewData["CartItemCount"] = GetCartItemCount();
             base.OnActionExecuting(context);
         }
+
+        // Search books
+        [HttpGet]
+        public IActionResult Search(string query, string category = "All", string sortBy = "Title")
+        {
+            var books = _context.Books.AsQueryable();
+
+            // Filter by search query
+            if (!string.IsNullOrEmpty(query))
+            {
+                books = books.Where(b => b.Title.Contains(query));
+            }
+
+            // Filter by category
+            if (!string.IsNullOrEmpty(category) && category != "All")
+            {
+                books = books.Where(b => b.Category == category);
+            }
+
+            // Sort books
+            books = sortBy switch
+            {
+                "Title" => books.OrderBy(b => b.Title),
+                "PriceLowToHigh" => books.OrderBy(b => b.Price),
+                "PriceHighToLow" => books.OrderByDescending(b => b.Price),
+                "Newest" => books.OrderByDescending(b => b.Id),
+                _ => books.OrderBy(b => b.Title)
+            };
+
+            // Get available categories for the filter dropdown
+            var categories = _context.Books.Select(b => b.Category).Distinct().ToList();
+
+            ViewBag.Query = query;
+            ViewBag.SelectedCategory = category;
+            ViewBag.SelectedSort = sortBy;
+            ViewBag.Categories = categories;
+            ViewBag.ResultCount = books.Count();
+
+            return View("Search", books.ToList());
+        }
+
+        // Browse all books with filtering
+        public IActionResult Browse(string category = "All", string sortBy = "Title")
+        {
+            return Search("", category, sortBy);
+        }
     }
 }

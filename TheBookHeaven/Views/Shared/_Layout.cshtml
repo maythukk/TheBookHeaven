@@ -60,7 +60,7 @@
                 <div class="d-flex d-lg-none">
                     <a class="nav-link" href="#"><i class="bi bi-search"></i></a>
                     <div class="cart-container">
-                        <a class="nav-link" asp-controller="Book" asp-action="Cart">
+                        <a class="nav-link" asp-controller="Book" asp-action="Search"><i class="bi bi-search"></i></a>
                             <i class="bi bi-cart"></i>
                             @if (ViewData["CartItemCount"] != null && (int)ViewData["CartItemCount"] > 0)
                             {
@@ -93,7 +93,7 @@
 
                     <!-- Desktop icons and login logic -->
                     <div class="d-none d-lg-flex align-items-center">
-                        <a class="nav-link" href="#"><i class="bi bi-search"></i></a>
+                        <a class="nav-link" asp-controller="Book" asp-action="Search"><i class="bi bi-search"></i></a>
 
                         <!-- Cart with badge -->
                         <div class="cart-container">
