@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using TheBookHeaven;
 using TheBookHeaven.Models;
@@ -133,7 +134,7 @@ public class AdminController : Controller
             return RedirectToAction("Login", "Account");
         }
 
-        // Fetch all users except admins (optional)
+        // Fetch all users except admins
         var users = _context.Users.Where(u => u.Role != "Admin").ToList();
 
         return View(users);
@@ -157,5 +158,81 @@ public class AdminController : Controller
         }
 
         return RedirectToAction("ViewUsers");
+    }
+
+    // GET: Admin/ViewOrders
+    public async Task<IActionResult> ViewOrders(string status)
+    {
+        var orders = _context.Orders
+                             .Include(o => o.OrderItems) // Include order items
+                                 .ThenInclude(oi => oi.Book) // Include book details for each order item
+                             .OrderBy(o => o.Status)  // Sort by status (e.g., Processing, Shipped, Delivered, Cancelled)
+                             .ThenByDescending(o => o.OrderDate) // Then sort by order date
+                             .AsQueryable();
+
+        if (!string.IsNullOrEmpty(status))
+        {
+            orders = orders.Where(o => o.Status == status); // Filter by specific status if selected
+        }
+
+        return View(await orders.ToListAsync());
+    }
+
+    // POST: Admin/UpdateOrderStatus/{id}
+    [HttpPost]
+    public async Task<IActionResult> UpdateOrderStatus(int id, string status)
+    {
+        var order = await _context.Orders.FindAsync(id);
+        if (order == null)
+        {
+            return NotFound();
+        }
+
+        // Update order status
+        order.Status = status;
+        _context.Update(order);
+        await _context.SaveChangesAsync();
+
+        return RedirectToAction(nameof(ViewOrders));
+    }
+
+    // POST: Admin approve cancellation
+    [HttpPost]
+    public async Task<IActionResult> ApproveCancellation(int id)
+    {
+        var order = await _context.Orders.FindAsync(id);
+        if (order == null || !order.CancellationRequested)
+        {
+            return NotFound(); // Or show an error message
+        }
+
+        // Approve the cancellation request and set the order status to "Cancelled"
+        order.Status = "Cancelled";
+        order.CancellationRequested = false; // Reset cancellation request flag
+        _context.Update(order);
+        await _context.SaveChangesAsync();
+
+        return RedirectToAction(nameof(ViewOrders)); // Redirect to admin's order management page
+    }
+
+    // POST: Admin reject cancellation
+    [HttpPost]
+    public async Task<IActionResult> RejectCancellation(int id)
+    {
+        var order = await _context.Orders.FindAsync(id);
+        if (order == null)
+        {
+            return NotFound();
+        }
+
+        // Set the CancellationRequested flag to false if the cancellation is rejected
+        order.CancellationRequested = false;
+        _context.Update(order);
+        await _context.SaveChangesAsync();
+
+        // Store rejection message in TempData to inform the customer
+        TempData["ErrorMessage"] = "Your cancellation request was rejected. Your order will proceed as normal.";
+
+        return RedirectToAction(nameof(ViewOrders));
     }
 }
