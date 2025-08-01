@@ -212,6 +212,9 @@ public class AdminController : Controller
         _context.Update(order);
         await _context.SaveChangesAsync();
 
+        // Store rejection message in TempData to inform the customer
+        TempData["SuccessMessage"] = "Your cancellation request was approved. Your order is cancelled.";
+
         return RedirectToAction(nameof(ViewOrders)); // Redirect to admin's order management page
     }
 
