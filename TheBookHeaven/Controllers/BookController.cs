@@ -145,6 +145,94 @@ namespace TheBookHeaven.Controllers
             return RedirectToAction("Cart");
         }
 
+        // Updated Increase quantity method
+        [HttpPost]
+        public JsonResult IncreaseQuantity(int id)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    // Session-based cart for non-logged-in users
+                    var cart = HttpContext.Session.GetObjectFromJson<List<CartItem>>("Cart") ?? new List<CartItem>();
+                    var item = cart.FirstOrDefault(ci => ci.BookId == id || (ci.Book?.Id == id));
+
+                    if (item != null)
+                    {
+                        item.Quantity++;
+                        HttpContext.Session.SetObjectAsJson("Cart", cart);
+                    }
+                }
+                else
+                {
+                    // Database cart for logged-in users
+                    var cartItem = _context.CartItems.FirstOrDefault(c => c.UserId == userId && c.BookId == id);
+
+                    if (cartItem != null)
+                    {
+                        cartItem.Quantity++;
+                        _context.CartItems.Update(cartItem);
+                        _context.SaveChanges();
+                    }
+                }
+
+                var cartCount = GetCartItemCount();
+                return Json(new { success = true, cartCount = cartCount });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception for debugging
+                Console.WriteLine($"Error in IncreaseQuantity: {ex.Message}");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // Updated Decrease quantity method
+        [HttpPost]
+        public JsonResult DecreaseQuantity(int id)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    // Session-based cart for non-logged-in users
+                    var cart = HttpContext.Session.GetObjectFromJson<List<CartItem>>("Cart") ?? new List<CartItem>();
+                    var item = cart.FirstOrDefault(ci => ci.BookId == id || (ci.Book?.Id == id));
+
+                    if (item != null && item.Quantity > 1)
+                    {
+                        item.Quantity--;
+                        HttpContext.Session.SetObjectAsJson("Cart", cart);
+                    }
+                }
+                else
+                {
+                    // Database cart for logged-in users
+                    var cartItem = _context.CartItems.FirstOrDefault(c => c.UserId == userId && c.BookId == id);
+
+                    if (cartItem != null && cartItem.Quantity > 1)
+                    {
+                        cartItem.Quantity--;
+                        _context.CartItems.Update(cartItem);
+                        _context.SaveChanges();
+                    }
+                }
+
+                var cartCount = GetCartItemCount();
+                return Json(new { success = true, cartCount = cartCount });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception for debugging
+                Console.WriteLine($"Error in DecreaseQuantity: {ex.Message}");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
         // Method to merge session cart with database cart when user logs in
         public void MergeSessionCartToUser(string userId)
         {
