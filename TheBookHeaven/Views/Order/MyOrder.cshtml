@@ -90,9 +90,6 @@
 
         <!-- Action Buttons -->
         <div class="card-footer text-end">
-            <a href="@Url.Action("TrackOrder", "Order", new { id = order.OrderId })" class="btn btn-outline-info">
-                <i class="fas fa-truck"></i> Track Order
-            </a>
 
             @if (order.Status == "Processing" && !order.CancellationRequested)
             {
