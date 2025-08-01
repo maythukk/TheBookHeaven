@@ -5,6 +5,24 @@
 }
 
 <div class="container mt-5" style="max-width: 500px;">
+
+    <!-- Success/Error Messages -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
     <h3 class="mb-4 text-center">Your Profile</h3>
 
     <div class="card shadow-sm">
@@ -15,21 +33,31 @@
                  style="width: 150px; height: 150px; object-fit: cover;" />
 
             <!-- Username with edit -->
-            <h5 class="card-title d-flex justify-content-center align-items-center">
+            <h5 class="card-title d-flex justify-content-center align-items-center flex-column">
 
-                <span id="username-text" style="text-decoration: underline; cursor: pointer;">
-                    @Model.Username
-                </span>
+                <div class="d-flex align-items-center">
+                    <span id="username-text" style="text-decoration: underline; cursor: pointer;">
+                        @Model.Username
+                    </span>
 
-                <form method="post" asp-action="EditUsername" asp-controller="Account"
-                      id="username-form" style="display:none; margin-left: 8px;">
-                    <input type="text" name="username" value="@Model.Username"
-                           style="width: 150px;" required />
-                    <button type="submit" class="btn btn-sm btn-success ms-1">Save</button>
-                    <button type="button" id="cancel-edit" class="btn btn-sm btn-secondary ms-1">Cancel</button>
-                </form>
+                    <form method="post" asp-action="EditUsername" asp-controller="Account"
+                          id="username-form" style="display:none; margin-left: 8px;">
+                        <div class="d-flex flex-column align-items-center">
+                            <div class="d-flex align-items-center">
+                                <input type="text" name="username" value="@Model.Username"
+                                       id="username-input" style="width: 150px;" required />
+                                <button type="submit" id="save-btn" class="btn btn-sm btn-success ms-1" disabled>Save</button>
+                                <button type="button" id="cancel-edit" class="btn btn-sm btn-secondary ms-1">Cancel</button>
+                            </div>
+                            <!-- Warning message -->
+                            <small id="username-warning" class="text-danger mt-1" style="display: none;">
+                                <i class="bi bi-exclamation-triangle"></i> Username already exists
+                            </small>
+                        </div>
+                    </form>
 
-                <i id="edit-icon" class="bi bi-pencil ms-2" style="cursor:pointer;"></i>
+                    <i id="edit-icon" class="bi bi-pencil ms-2" style="cursor:pointer;"></i>
+                </div>
             </h5>
 
             <!-- Email -->
@@ -53,14 +81,18 @@
         const editIcon = document.getElementById('edit-icon');
         const usernameText = document.getElementById('username-text');
         const usernameForm = document.getElementById('username-form');
+        const usernameInput = document.getElementById('username-input');
         const cancelBtn = document.getElementById('cancel-edit');
+        const saveBtn = document.getElementById('save-btn');
+        const warningMsg = document.getElementById('username-warning');
+        const originalUsername = '@Model.Username';
 
         // Show form, hide text and icon
         editIcon.addEventListener('click', () => {
             usernameText.style.display = 'none';
             editIcon.style.display = 'none';
             usernameForm.style.display = 'inline-block';
-            usernameForm.querySelector('input[name="username"]').focus();
+            usernameInput.focus();
         });
 
         // Cancel editing then revert to original display
@@ -68,6 +100,53 @@
             usernameForm.style.display = 'none';
             usernameText.style.display = 'inline';
             editIcon.style.display = 'inline-block';
+
+            // Reset form
+            usernameInput.value = originalUsername;
+            warningMsg.style.display = 'none';
+            usernameInput.style.borderColor = '';
+            saveBtn.disabled = false;
+        });
+
+        // Check username availability while typing
+        let timeoutId;
+        usernameInput.addEventListener('input', function() {
+            const newUsername = this.value.trim();
+
+            // Clear previous timeout
+            clearTimeout(timeoutId);
+
+            // Reset warning state
+            warningMsg.style.display = 'none';
+            this.style.borderColor = '';
+            saveBtn.disabled = false;
+
+            // Don't check if username is same as original or empty
+            if (newUsername === originalUsername || newUsername === '') {
+                return;
+            }
+
+            // Debounce the API call
+            timeoutId = setTimeout(() => {
+                fetch(`/Account/CheckUsername?username=${encodeURIComponent(newUsername)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.exists) {
+                            // Username exists - show warning
+                            warningMsg.style.display = 'block';
+                            usernameInput.style.borderColor = '#dc3545';
+                            saveBtn.disabled = true;
+                        } else {
+                            // Username available - hide warning
+                            warningMsg.style.display = 'none';
+                            usernameInput.style.borderColor = '#28a745';
+                            saveBtn.disabled = false;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking username:', error);
+                    });
+            }, 500); // Wait 500ms after user stops typing
         });
     </script>
 }

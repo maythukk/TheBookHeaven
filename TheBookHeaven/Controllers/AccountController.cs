@@ -211,7 +211,26 @@ namespace TheBookHeaven.Controllers
             return RedirectToAction("Profile");
         }
 
-        // POST: Update username
+        // GET: Check if username exists
+        [HttpGet]
+        public JsonResult CheckUsername(string username)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return Json(new { exists = false });
+            }
+
+            // Get current user's username to exclude from check
+            var currentUsername = HttpContext.Session.GetString("Username");
+
+            // Check if username exists (excluding current user)
+            var usernameExists = _context.Users
+                .Any(u => u.Username.ToLower() == username.ToLower() && u.Username != currentUsername);
+
+            return Json(new { exists = usernameExists });
+        }
+
+        // POST: Update username with validation
         [HttpPost]
         public IActionResult EditUsername(string username)
         {
@@ -225,11 +244,22 @@ namespace TheBookHeaven.Controllers
 
             if (!string.IsNullOrWhiteSpace(username))
             {
+                // Check if username already exists (excluding current user)
+                var usernameExists = _context.Users
+                    .Any(u => u.Username.ToLower() == username.ToLower() && u.Username != currentUsername);
+
+                if (usernameExists)
+                {
+                    TempData["Error"] = "Username already exists. Please choose a different username.";
+                    return RedirectToAction("Profile");
+                }
+
                 user.Username = username;
                 _context.SaveChanges();
 
                 // Update session with new username
                 HttpContext.Session.SetString("Username", username);
+                TempData["Success"] = "Username updated successfully!";
             }
 
             return RedirectToAction("Profile");
