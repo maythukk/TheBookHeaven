@@ -17,48 +17,44 @@ namespace TheBookHeaven.Controllers
         }
 
         // GET: Order/MyOrder
-        public async Task<IActionResult> MyOrder()
+        public async Task<IActionResult> MyOrder(string viewType)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+            // Check if the user is logged in
             if (string.IsNullOrEmpty(userId))
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            // Fetch orders and include order items and related book information
-            var orders = await _context.Orders
-                .Where(o => o.UserId == userId)
-                .Include(o => o.OrderItems)        // Include order items
-                    .ThenInclude(oi => oi.Book)    // Include book details for each order item
-                .OrderByDescending(o => o.OrderDate)
-                .ToListAsync();
+            List<Order> orders;
 
+            if (viewType == "history")
+            {
+                // Fetch history orders (Delivered and Cancelled)
+                orders = await _context.Orders
+                    .Where(o => o.UserId == userId && (o.Status == "Delivered" || o.Status == "Cancelled"))
+                    .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Book)
+                    .OrderByDescending(o => o.OrderDate)
+                    .ToListAsync();
+            }
+            else
+            {
+                // Fetch current orders (Processing and Shipped)
+                orders = await _context.Orders
+                    .Where(o => o.UserId == userId && (o.Status == "Processing" || o.Status == "Shipped"))
+                    .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Book)
+                    .OrderByDescending(o => o.OrderDate)
+                    .ToListAsync();
+            }
+
+            // Return the orders view
             return View(orders);
         }
 
-        // GET: Order tracking method
-        public async Task<IActionResult> TrackOrder(int id)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrEmpty(userId))
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            var order = await _context.Orders
-                .FirstOrDefaultAsync(o => o.OrderId == id && o.UserId == userId);
-
-            if (order == null)
-            {
-                return NotFound();
-            }
-
-            return View(order);
-        }
-
-        // POST: Order cancellation method (customer request)
+        // POST: Order cancellation method
         [HttpPost]
         public async Task<IActionResult> CancelOrder(int id)
         {

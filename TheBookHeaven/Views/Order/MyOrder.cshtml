@@ -4,6 +4,12 @@
 
 <h2>My Orders</h2>
 
+<!-- Tabs for Switching Between Current and History Orders -->
+<div class="btn-group mb-3">
+    <a href="@Url.Action("MyOrder", "Order", new { viewType = "current" })" class="btn btn-primary">Current Orders</a>
+    <a href="@Url.Action("MyOrder", "Order", new { viewType = "history" })" class="btn btn-secondary">History Orders</a>
+</div>
+
 <!-- Display Success Message -->
 @if (TempData["SuccessMessage"] != null)
 {
@@ -28,9 +34,9 @@
                 <div class="col-md-6">
                     <h5>Order #@order.OrderId</h5>
                     <span class="badge @(order.Status == "Processing" ? "bg-warning" :
-                                                                                             order.Status == "Shipped" ? "bg-info" :
-                                                                                             order.Status == "Delivered" ? "bg-success" :
-                                                                                             order.Status == "Cancelled" ? "bg-danger" : "bg-secondary")">
+                                                                   order.Status == "Shipped" ? "bg-info" :
+                                                                   order.Status == "Delivered" ? "bg-success" :
+                                                                   order.Status == "Cancelled" ? "bg-danger" : "bg-secondary")">
                     @order.Status
                 </span>
             </div>
@@ -90,7 +96,6 @@
 
         <!-- Action Buttons -->
         <div class="card-footer text-end">
-
             @if (order.Status == "Processing" && !order.CancellationRequested)
             {
                 <form method="post" asp-action="CancelOrder" asp-route-id="@order.OrderId" style="display:inline;">
@@ -102,19 +107,3 @@
         </div>
     </div>
 }
-<!-- Display Success and Error Messages -->
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success" role="alert">
-        @TempData["SuccessMessage"]
-    </div>
-}
-
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger" role="alert">
-        @TempData["ErrorMessage"]
-    </div>
-}
-
-
