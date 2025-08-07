@@ -18,9 +18,19 @@ namespace TheBookHeaven.Controllers
         }
 
         // Book Categories
-        public IActionResult BestSellers() => View();
-        public IActionResult Fiction() => View();
-        public IActionResult NonFiction() => View();
+        // Action for Fiction Books
+        public IActionResult Fiction()
+        {
+            var books = _context.Books.Where(b => b.Category == "Fiction").ToList();
+            return View(books);  // Pass the filtered list to the view
+        }
+
+        // Action for Non-Fiction Books
+        public IActionResult NonFiction()
+        {
+            var books = _context.Books.Where(b => b.Category == "Non-Fiction").ToList();
+            return View(books);  // Pass the filtered list to the view
+        }
 
         // Helper method to get cart count
         private int GetCartItemCount()
