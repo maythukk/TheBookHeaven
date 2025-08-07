@@ -13,7 +13,7 @@
     </div>
 
     <!-- Section Template -->
-    @foreach (var category in Model.Keys.Reverse())  
+    @foreach (var category in Model.Keys.Reverse())
     {
         <div class="mb-5">
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -24,47 +24,51 @@
             <!-- Books that are initially shown (show only first 6) -->
             <div class="row initial-books" id="@category-books">
                 <!-- Show only first 6 books initially -->
-                @foreach (var book in Model[category].Take(6))  
+                @foreach (var book in Model[category].Take(6))
                 {
                     <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-4">
-                        <div class="card h-100 d-flex flex-column shadow-sm">
-                            <img src="@book.ImageUrl"
-                                 class="card-img-top"
-                                 alt="@book.Title"
-                                 style="height: 250px; object-fit: cover;" />
-                            <div class="card-body d-flex flex-column p-2">
-                                <h6 class="card-title text-truncate" title="@book.Title">@book.Title</h6>
-                                <p class="card-text text-muted small mb-2">$@book.Price</p>
-                                <button onclick="addToCart(@book.Id)"
-                                        class="btn btn-outline-primary btn-sm mt-auto w-100">
-                                    <i class="bi bi-cart-plus"></i> Add to Cart
-                                </button>
+                        <a href="@Url.Action("Details", "Book", new { id = book.Id })">
+                            <div class="card h-100 d-flex flex-column shadow-sm">
+                                <img src="@book.ImageUrl"
+                                     class="card-img-top"
+                                     alt="@book.Title"
+                                     style="height: 250px; object-fit: cover;" />
+                                <div class="card-body d-flex flex-column p-2">
+                                    <h6 class="card-title text-truncate" title="@book.Title">@book.Title</h6>
+                                    <p class="card-text text-muted small mb-2">$@book.Price</p>
+                                    <button onclick="addToCart(@book.Id)"
+                                            class="btn btn-outline-primary btn-sm mt-auto w-100">
+                                        <i class="bi bi-cart-plus"></i> Add to Cart
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
                 }
             </div>
 
             <!-- Hidden books (initially hidden) -->
             <div class="row more-books" id="@category-more-books" style="display:none;">
-                    <!-- Show the remaining books -->
-                @foreach (var book in Model[category].Skip(6))  
+                <!-- Show the remaining books -->
+                @foreach (var book in Model[category].Skip(6))
                 {
                     <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-4">
-                        <div class="card h-100 d-flex flex-column shadow-sm">
-                            <img src="@book.ImageUrl"
-                                 class="card-img-top"
-                                 alt="@book.Title"
-                                 style="height: 250px; object-fit: cover;" />
-                            <div class="card-body d-flex flex-column p-2">
-                                <h6 class="card-title text-truncate" title="@book.Title">@book.Title</h6>
-                                <p class="card-text text-muted small mb-2">$@book.Price</p>
-                                <button onclick="addToCart(@book.Id)"
-                                        class="btn btn-outline-primary btn-sm mt-auto w-100">
-                                    <i class="bi bi-cart-plus"></i> Add to Cart
-                                </button>
+                        <a href="@Url.Action("Details", "Book", new { id = book.Id })">
+                            <div class="card h-100 d-flex flex-column shadow-sm">
+                                <img src="@book.ImageUrl"
+                                     class="card-img-top"
+                                     alt="@book.Title"
+                                     style="height: 250px; object-fit: cover;" />
+                                <div class="card-body d-flex flex-column p-2">
+                                    <h6 class="card-title text-truncate" title="@book.Title">@book.Title</h6>
+                                    <p class="card-text text-muted small mb-2">$@book.Price</p>
+                                    <button onclick="addToCart(@book.Id)"
+                                            class="btn btn-outline-primary btn-sm mt-auto w-100">
+                                        <i class="bi bi-cart-plus"></i> Add to Cart
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
                 }
             </div>

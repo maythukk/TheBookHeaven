@@ -4,22 +4,19 @@
     ViewData["Title"] = "Book Details";
 }
 
-<div class="container mt-5">
+<div class="container">
     <div class="row">
-        <div class="col-md-4">
-            <img src="@Model.ImageUrl" class="img-fluid rounded shadow-sm" alt="@Model.Title" />
+        <div class="col-md-6">
+            <img src="@Model.ImageUrl" class="img-fluid" alt="@Model.Title" style="height: 400px; object-fit: cover;" />
         </div>
-        <div class="col-md-8">
+        <div class="col-md-6">
             <h2>@Model.Title</h2>
-            <p class="text-muted">$@Model.Price</p>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse efficitur lorem ut nulla iaculis dignissim.</p>
-
-            <form asp-controller="Books" asp-action="AddToCart" method="post">
-                <input type="hidden" name="id" value="@Model.Id" />
-                <button type="submit" class="btn btn-success mt-3">
-                    <i class="bi bi-cart-plus"></i> Add to Cart
-                </button>
-            </form>
+            <p><strong>Category:</strong> @Model.Category</p>
+            <p><strong>Price:</strong> $@Model.Price</p>
+            <p><strong>Description:</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus imperdiet...</p> <!-- You can add a description field in the Book model if needed -->
+            <button onclick="addToCart(@Model.Id)" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-cart-plus"></i> Add to Cart
+            </button>
         </div>
     </div>
 </div>

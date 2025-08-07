@@ -425,5 +425,15 @@ namespace TheBookHeaven.Controllers
             return Search("", category, sortBy);
         }
 
+        // Action for Book Details
+        public IActionResult Details(int id)
+        {
+            var book = _context.Books.FirstOrDefault(b => b.Id == id);
+            if (book == null)
+            {
+                return NotFound(); // If the book doesn't exist
+            }
+            return View(book);  // Pass the book to the view
+        }
     }
 }
