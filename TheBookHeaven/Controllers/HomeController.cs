@@ -44,7 +44,12 @@ namespace TheBookHeaven.Controllers
             // Get all books from the database
             var books = _context.Books.ToList();
 
-            return View(books); // Pass the list to the view
+            // Group books by category and pass as a dictionary
+            var groupedBooks = books
+                .GroupBy(b => b.Category)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            return View(groupedBooks); // Pass the grouped data to the view
         }
 
         public IActionResult Privacy()

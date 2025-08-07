@@ -1,4 +1,4 @@
-﻿@model List<TheBookHeaven.Models.Book>
+﻿@model Dictionary<string, List<TheBookHeaven.Models.Book>>
 
 @{
     ViewData["Title"] = "Home";
@@ -13,15 +13,42 @@
     </div>
 
     <!-- Section Template -->
-    @foreach (var category in new[] { "Best Sellers", "Fiction", "Non-Fiction" })
+    @foreach (var category in Model.Keys.Reverse())  
     {
         <div class="mb-5">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h3>@category</h3>
-                <a href="#" class="btn btn-outline-primary btn-sm">View All</a>
+                <button class="btn btn-outline-primary btn-sm" onclick="toggleBooks('@category')">View All</button>
             </div>
-            <div class="row">
-                @foreach (var book in Model.Where(b => b.Category == category))
+
+            <!-- Books that are initially shown (show only first 6) -->
+            <div class="row initial-books" id="@category-books">
+                <!-- Show only first 6 books initially -->
+                @foreach (var book in Model[category].Take(6))  
+                {
+                    <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-4">
+                        <div class="card h-100 d-flex flex-column shadow-sm">
+                            <img src="@book.ImageUrl"
+                                 class="card-img-top"
+                                 alt="@book.Title"
+                                 style="height: 250px; object-fit: cover;" />
+                            <div class="card-body d-flex flex-column p-2">
+                                <h6 class="card-title text-truncate" title="@book.Title">@book.Title</h6>
+                                <p class="card-text text-muted small mb-2">$@book.Price</p>
+                                <button onclick="addToCart(@book.Id)"
+                                        class="btn btn-outline-primary btn-sm mt-auto w-100">
+                                    <i class="bi bi-cart-plus"></i> Add to Cart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Hidden books (initially hidden) -->
+            <div class="row more-books" id="@category-more-books" style="display:none;">
+                    <!-- Show the remaining books -->
+                @foreach (var book in Model[category].Skip(6))  
                 {
                     <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-4">
                         <div class="card h-100 d-flex flex-column shadow-sm">
@@ -44,3 +71,22 @@
         </div>
     }
 </div>
+
+<!-- JavaScript to handle the toggling -->
+<script>
+    function toggleBooks(category) {
+        // Get the more books section and the button for the category
+        var moreBooks = document.getElementById(category + '-more-books');
+        var initialBooks = document.getElementById(category + '-books');
+        var button = event.target;
+
+        // Toggle visibility of the more books section
+        if (moreBooks.style.display === "none") {
+            moreBooks.style.display = "flex";  // Show the remaining books with flex
+            button.innerText = "View Less";  // Change button text to "View Less"
+        } else {
+            moreBooks.style.display = "none";  // Hide the remaining books
+            button.innerText = "View All";  // Change button text back to "View All"
+        }
+    }
+</script>
