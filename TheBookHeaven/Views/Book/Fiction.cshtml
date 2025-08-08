@@ -10,23 +10,62 @@
         @foreach (var book in Model)
         {
             <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-4">
-                <a href="@Url.Action("Details", "Book", new { id = book.Id })">
-                    <div class="card h-100 d-flex flex-column shadow-sm">
+                <div class="card h-100 d-flex flex-column shadow-sm">
+                    <!-- Clickable area for navigation (image and title only) -->
+                    <a href="@Url.Action("Details", "Book", new { id = book.Id })" class="text-decoration-none">
                         <img src="@book.ImageUrl"
                              class="card-img-top"
                              alt="@book.Title"
                              style="height: 250px; object-fit: cover;" />
                         <div class="card-body d-flex flex-column p-2">
-                            <h6 class="card-title text-truncate" title="@book.Title">@book.Title</h6>
-                            <p class="card-text text-muted small mb-2">$@book.Price</p>
-                            <button onclick="addToCart(@book.Id)"
-                                    class="btn btn-outline-primary btn-sm mt-auto w-100">
-                                <i class="bi bi-cart-plus"></i> Add to Cart
-                            </button>
+                            <h6 class="card-title text-truncate text-dark" title="@book.Title">@book.Title</h6>
                         </div>
+                    </a>
+                    <!-- Price and Add to Cart button (outside the link) -->
+                    <div class="card-body d-flex flex-column p-2 pt-0">
+                        <p class="card-text text-muted small mb-2">$@book.Price</p>
+                        <button onclick="addToCart(@book.Id, event)"
+                                class="btn btn-outline-primary btn-sm mt-auto w-100">
+                            <i class="bi bi-cart-plus"></i> Add to Cart
+                        </button>
                     </div>
-                </a>
+                </div>
             </div>
         }
     </div>
 </div>
+
+<script>
+    // Add to cart function to prevent navigation conflict
+    function addToCart(bookId, event) {
+        // Prevent the click from bubbling up to parent elements
+        if (event) {
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
+        // Make AJAX call to add item to cart
+        fetch('@Url.Action("AddToCart", "Book")?id=' + bookId, {
+            method: 'GET'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update cart count 
+                var cartCountElement = document.getElementById('cart-count');
+                if (cartCountElement && data.cartCount) {
+                    cartCountElement.textContent = data.cartCount;
+                }
+
+                // Show success message 
+                alert(data.message || 'Item added to cart successfully!');
+            } else {
+                alert(data.message || 'Failed to add item to cart.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while adding the item to cart.');
+        });
+    }
+</script>
