@@ -57,6 +57,17 @@ namespace TheBookHeaven.Controllers
             SetCartCount(); // Set cart count for the header
             return View();
         }
+        public IActionResult Terms()
+        {
+            SetCartCount(); // Set cart count for the header
+            return View();
+        }
+
+        public IActionResult Contact()
+        {
+            SetCartCount(); // Set cart count for the header
+            return View();
+        }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

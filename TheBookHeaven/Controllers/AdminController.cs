@@ -65,11 +65,12 @@ public class AdminController : Controller
                     return NotFound();
                 }
 
-                // Update book properties
+                // Update book properties, including stock quantity
                 book.Title = updatedBook.Title;
                 book.Category = updatedBook.Category;
                 book.ImageUrl = updatedBook.ImageUrl;
                 book.Price = updatedBook.Price;
+                book.StockQuantity = updatedBook.StockQuantity;  // Update stock quantity
 
                 _context.SaveChanges();
 
@@ -116,8 +117,10 @@ public class AdminController : Controller
     {
         if (ModelState.IsValid)
         {
+            // Add stock quantity to the book
             _context.Books.Add(book);
             _context.SaveChanges();
+
             TempData["SuccessMessage"] = "Book added successfully!";
             return RedirectToAction("ViewBooks");
         }
@@ -166,7 +169,8 @@ public class AdminController : Controller
         var orders = _context.Orders
                              .Include(o => o.OrderItems) // Include order items
                                  .ThenInclude(oi => oi.Book) // Include book details for each order item
-                             .OrderBy(o => o.Status)  // Sort by status (e.g., Processing, Shipped, Delivered, Cancelled)
+                             .OrderBy(o => o.Status == "Cancelled" ? 1 : 0) // Place cancelled orders last
+                             .ThenBy(o => o.Status)  // Sort by status 
                              .ThenByDescending(o => o.OrderDate) // Then sort by order date
                              .AsQueryable();
 

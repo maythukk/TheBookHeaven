@@ -1,6 +1,84 @@
 ﻿@{
     ViewData["Title"] = "Privacy Policy";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p> privacy policy page</p>
+<div class="container py-5">
+    <!-- Header Section -->
+    <div class="text-center mb-5">
+        <div class="mb-3">
+            <i class="bi bi-shield-check display-3 text-primary"></i>
+        </div>
+        <h1 class="display-4 fw-bold text-dark mb-3">Privacy Policy</h1>
+        <p class="lead text-muted">Your privacy is important to us</p>
+        <div class="badge bg-light text-dark px-3 py-2">
+            <i class="bi bi-calendar3"></i> Last updated: January 2025
+        </div>
+    </div>
+
+    <!-- Content Cards -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Introduction Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                            <i class="bi bi-info-circle text-primary"></i>
+                        </div>
+                        <h4 class="mb-0 text-primary">Introduction</h4>
+                    </div>
+                    <p class="text-muted mb-0">
+                        At TheBookHeaven, we are committed to protecting your privacy and ensuring the security of your personal information. This privacy policy explains how we collect, use, and safeguard your data when you visit our website and make purchases.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Information We Collect Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-success bg-opacity-10 rounded-circle p-2 me-3">
+                            <i class="bi bi-collection text-success"></i>
+                        </div>
+                        <h4 class="mb-0 text-success">Information We Collect</h4>
+                    </div>
+                    <ul class="list-unstyled text-muted">
+                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Personal information (name, email, address)</li>
+                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Order and purchase history</li>
+                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Website usage data and preferences</li>
+                        <li class="mb-0"><i class="bi bi-check-circle text-success me-2"></i>Payment information (processed securely)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- How We Use Your Data Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-warning bg-opacity-10 rounded-circle p-2 me-3">
+                            <i class="bi bi-gear text-warning"></i>
+                        </div>
+                        <h4 class="mb-0 text-warning">How We Use Your Data</h4>
+                    </div>
+                    <p class="text-muted mb-0">
+                        We use your information to process orders, improve our services, send important updates about your purchases, and provide customer support. We never sell or share your personal data with third parties without your consent.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Contact Section -->
+            <div class="card border-0 shadow-sm bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body p-4 text-white text-center">
+                    <i class="bi bi-envelope-heart display-6 mb-3"></i>
+                    <h4 class="mb-3">Questions About Your Privacy?</h4>
+                    <p class="mb-3 opacity-75">
+                        We're here to help! Contact us anytime if you have questions about how we handle your personal information.
+                    </p>
+                    <a href="@Url.Action("Contact", "Home")" class="btn btn-light btn-lg rounded-pill px-4">
+                        <i class="bi bi-chat-dots me-2"></i>Contact Us
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
