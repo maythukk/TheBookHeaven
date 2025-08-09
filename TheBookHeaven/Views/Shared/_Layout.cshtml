@@ -1,5 +1,5 @@
 @{
-    Layout = null;  
+    Layout = null;
 }
 
 <!DOCTYPE html>
@@ -61,11 +61,11 @@
                     <a class="nav-link" href="#"><i class="bi bi-search"></i></a>
                     <div class="cart-container">
                         <a class="nav-link" asp-controller="Book" asp-action="Search"><i class="bi bi-search"></i></a>
-                            <i class="bi bi-cart"></i>
-                            @if (ViewData["CartItemCount"] != null && (int)ViewData["CartItemCount"] > 0)
-                            {
-                                <span class="cart-badge" id="mobile-cart-count">@ViewData["CartItemCount"]</span>
-                            }
+                        <i class="bi bi-cart"></i>
+                        @if (ViewData["CartItemCount"] != null && (int)ViewData["CartItemCount"] > 0)
+                        {
+                            <span class="cart-badge" id="mobile-cart-count">@ViewData["CartItemCount"]</span>
+                        }
                         </a>
                     </div>
                     <a class="nav-link" asp-controller="Account" asp-action="Login"><i class="bi bi-person"></i></a>
@@ -101,11 +101,11 @@
                                 <i class="bi bi-cart"></i>
                                 @if (ViewData["CartItemCount"] != null && (int)ViewData["CartItemCount"] > 0)
                                 {
-                                    <span class="cart-badge" id="cart-item-count">@ViewData["CartItemCount"]</span>
+                                    <span class="cart-badge" id="cart-count">@ViewData["CartItemCount"]</span>
                                 }
                                 else
                                 {
-                                    <span class="cart-badge" id="cart-item-count" style="display: none;">0</span>
+                                    <span class="cart-badge" id="cart-count" style="display: none;">0</span>
                                 }
                             </a>
                         </div>
@@ -193,39 +193,170 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 
-    <!-- Add to Cart Script -->
+    <!-- Enhanced Global Cart Script -->
     <script>
-        function addToCart(bookId) {
-            fetch(`/Book/AddToCart?id=${bookId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Show success message
-                        var toast = new bootstrap.Toast(document.getElementById('cartToast'));
-                        toast.show();
+        // Add to Cart function with stock management
+        function addToCart(bookId, event) {
+            // Prevent event bubbling to parent elements
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
 
-                        // Update cart item count in the header
-                        var cartCount = document.getElementById('cart-item-count');
-                        var mobileCartCount = document.getElementById('mobile-cart-count');
+            fetch(`/Book/AddToCart?id=${bookId}`, {
+                method: 'GET'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success toast
+                    var toast = new bootstrap.Toast(document.getElementById('cartToast'));
+                    toast.show();
 
-                        if (data.cartCount > 0) {
-                            cartCount.textContent = data.cartCount;
-                            cartCount.style.display = 'inline';
+                    // Update cart count in header (both desktop and mobile)
+                    updateCartCount(data.cartCount);
 
-                            if (mobileCartCount) {
-                                mobileCartCount.textContent = data.cartCount;
-                                mobileCartCount.style.display = 'inline';
-                            }
-                        }
+                } else {
+                    // Handle out of stock with similar books modal
+                    if (data.outOfStock && data.similarBooks && data.similarBooks.length > 0) {
+                        showOutOfStockModal(data.similarBooks);
                     } else {
-                        alert("Something went wrong.");
+                        // Show error alert
+                        showAlert('warning', data.message || 'This item is currently out of stock.');
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert("Something went wrong.");
-                });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('danger', 'An error occurred while adding the item to cart.');
+            });
         }
+
+        // Update cart count in header
+        function updateCartCount(count) {
+            var cartCount = document.getElementById('cart-count');
+            var mobileCartCount = document.getElementById('mobile-cart-count');
+
+            if (count > 0) {
+                if (cartCount) {
+                    cartCount.textContent = count;
+                    cartCount.style.display = 'inline';
+                }
+                if (mobileCartCount) {
+                    mobileCartCount.textContent = count;
+                    mobileCartCount.style.display = 'inline';
+                }
+            }
+        }
+
+        // Show alert messages
+        function showAlert(type, message) {
+            const existingAlert = document.querySelector('.alert');
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', alertHtml);
+
+            setTimeout(() => {
+                const alert = document.querySelector('.alert');
+                if (alert) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+
+        // Show out of stock modal with similar books
+        function showOutOfStockModal(similarBooks) {
+            let modal = document.getElementById('outOfStockModal');
+            if (!modal) {
+                const modalHtml = `
+                    <div class="modal fade" id="outOfStockModal" tabindex="-1" aria-labelledby="outOfStockModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="outOfStockModalLabel">
+                                        <i class="bi bi-exclamation-triangle text-warning"></i> Out of Stock
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Sorry, this book is currently out of stock. Here are some similar books you might like:</p>
+                                    <div id="similarBooksContainer" class="row">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                modal = document.getElementById('outOfStockModal');
+            }
+
+            const container = document.getElementById('similarBooksContainer');
+            container.innerHTML = '';
+
+            similarBooks.forEach(book => {
+                const bookHtml = `
+                    <div class="col-md-4 mb-3">
+                        <div class="card">
+                            <img src="${book.imageUrl}" class="card-img-top" alt="${book.title}" style="height: 200px; object-fit: cover;">
+                            <div class="card-body">
+                                <h6 class="card-title">${book.title}</h6>
+                                <p class="card-text text-success">$${book.price}</p>
+                                <a href="/Book/Details?id=${book.id}" class="btn btn-primary btn-sm">View Details</a>
+                                <button onclick="addToCart(${book.id}, event)" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-cart-plus"></i> Add to Cart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', bookHtml);
+            });
+
+            const bootstrapModal = new bootstrap.Modal(modal);
+            bootstrapModal.show();
+        }
+
+        // Home page specific function for toggle books
+        function toggleBooks(category) {
+            var moreBooks = document.getElementById(category + '-more-books');
+            var button = event.target;
+
+            if (moreBooks && moreBooks.style.display === "none") {
+                moreBooks.style.display = "flex";
+                button.innerText = "View Less";
+            } else if (moreBooks) {
+                moreBooks.style.display = "none";
+                button.innerText = "View All";
+            }
+        }
+
+        // Auto-submit form functionality for search page
+        document.addEventListener('DOMContentLoaded', function() {
+            const categorySelect = document.querySelector('select[name="category"]');
+            const sortSelect = document.querySelector('select[name="sortBy"]');
+
+            if (categorySelect) {
+                categorySelect.addEventListener('change', function() {
+                    this.form.submit();
+                });
+            }
+
+            if (sortSelect) {
+                sortSelect.addEventListener('change', function() {
+                    this.form.submit();
+                });
+            }
+        });
     </script>
 </body>
 </html>

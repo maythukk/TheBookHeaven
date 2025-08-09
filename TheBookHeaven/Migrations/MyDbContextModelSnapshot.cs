@@ -42,16 +42,13 @@ namespace TheBookHeaven.Migrations
                         .HasPrecision(10, 2)
                         .HasColumnType("decimal(10,2)");
 
-                    b.Property<int>("StockQuantity")
-                        .HasColumnType("int");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Books");
+                    b.ToTable("Books", (string)null);
                 });
 
             modelBuilder.Entity("TheBookHeaven.Models.CartItem", b =>
@@ -76,7 +73,7 @@ namespace TheBookHeaven.Migrations
 
                     b.HasIndex("BookId");
 
-                    b.ToTable("CartItems");
+                    b.ToTable("CartItems", (string)null);
                 });
 
             modelBuilder.Entity("TheBookHeaven.Models.Order", b =>
@@ -164,7 +161,7 @@ namespace TheBookHeaven.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("TheBookHeaven.Models.CartItem", b =>

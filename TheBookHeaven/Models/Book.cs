@@ -5,13 +5,21 @@ namespace TheBookHeaven.Models
 {
     public class Book
     {
-        public int Id { get; set; } // primary key
+        public int Id { get; set; }
         public string Title { get; set; }
         public string Category { get; set; }
+        public string ImageUrl { get; set; }
 
-        [Precision(10, 2)] // Max 10 digits, 2 digits after the decimal point
+        [Precision(10, 2)]
         public decimal Price { get; set; }
 
-        public string ImageUrl { get; set; }
+        public int StockQuantity { get; set; }  
+
+        // New computed properties for convenience
+        [NotMapped]
+        public bool IsInStock => StockQuantity > 0;
+
+        [NotMapped]
+        public bool IsLowStock => StockQuantity > 0 && StockQuantity <= 5;
     }
 }

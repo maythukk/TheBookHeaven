@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Book Details";
+    var similarBooks = ViewBag.SimilarBooks as List<TheBookHeaven.Models.Book> ?? new List<TheBookHeaven.Models.Book>();
 }
 
 <div class="container">
@@ -13,10 +14,174 @@
             <h2>@Model.Title</h2>
             <p><strong>Category:</strong> @Model.Category</p>
             <p><strong>Price:</strong> $@Model.Price</p>
-            <p><strong>Description:</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus imperdiet...</p> <!-- You can add a description field in the Book model if needed -->
-            <button onclick="addToCart(@Model.Id)" class="btn btn-outline-primary btn-sm">
-                <i class="bi bi-cart-plus"></i> Add to Cart
-            </button>
+
+            <!-- Stock Status Display -->
+            <div class="mb-3">
+                @if (!Model.IsInStock)
+                {
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i> <strong>Out of Stock</strong>
+                        <p class="mb-0">This item is currently unavailable.</p>
+                    </div>
+                }
+                else if (Model.IsLowStock)
+                {
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-circle"></i> <strong>Low Stock</strong>
+                        <p class="mb-0">Only @Model.StockQuantity left in stock - order soon!</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-success">
+                        <i class="bi bi-check-circle"></i> <strong>In Stock</strong>
+                        <p class="mb-0">@Model.StockQuantity available</p>
+                    </div>
+                }
+            </div>
+
+            <p><strong>Description:</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus imperdiet...</p>
+
+            <!-- Add to Cart Button -->
+            @if (Model.IsInStock)
+            {
+                <button onclick="addToCart(@Model.Id, event)" class="btn btn-primary btn-lg">
+                    <i class="bi bi-cart-plus"></i> Add to Cart
+                </button>
+            }
+            else
+            {
+                <button class="btn btn-secondary btn-lg" disabled>
+                    <i class="bi bi-x-circle"></i> Out of Stock
+                </button>
+            }
+        </div>
+    </div>
+
+    <!-- Similar Books Section (shown when out of stock or always) -->
+    @if (similarBooks.Any())
+    {
+        <div class="row mt-5">
+            <div class="col-12">
+                @if (!Model.IsInStock)
+                {
+                    <h3>Since this book is out of stock, you might like these similar books:</h3>
+                }
+                else
+                {
+                    <h3>You might also like:</h3>
+                }
+
+                <div class="row mt-3">
+                    @foreach (var similarBook in similarBooks)
+                    {
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <a href="@Url.Action("Details", "Book", new { id = similarBook.Id })" class="text-decoration-none">
+                                    <img src="@similarBook.ImageUrl"
+                                         class="card-img-top"
+                                         alt="@similarBook.Title"
+                                         style="height: 250px; object-fit: cover;" />
+                                    <div class="card-body">
+                                        <h6 class="card-title text-dark">@similarBook.Title</h6>
+                                        <p class="card-text text-muted">@similarBook.Category</p>
+                                    </div>
+                                </a>
+                                <div class="card-body pt-0">
+                                    <p class="card-text text-success fw-bold">$@similarBook.Price</p>
+                                    @if (similarBook.IsInStock)
+                                    {
+                                        <button onclick="addToCart(@similarBook.Id, event)"
+                                                class="btn btn-outline-primary btn-sm w-100">
+                                            <i class="bi bi-cart-plus"></i> Add to Cart
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-outline-secondary btn-sm w-100" disabled>
+                                            <i class="bi bi-x-circle"></i> Out of Stock
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Out of Stock Modal for recommendations -->
+<div class="modal fade" id="outOfStockModal" tabindex="-1" aria-labelledby="outOfStockModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="outOfStockModalLabel">
+                    <i class="bi bi-exclamation-triangle text-warning"></i> Out of Stock
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Sorry, this book is currently out of stock. Here are some similar books you might like:</p>
+                <div id="similarBooksContainer" class="row">
+                   
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+
+    // Show alert messages
+    function showAlert(type, message) {
+        const alertHtml = `
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+
+        // Insert at the top of the container
+        const container = document.querySelector('.container');
+        container.insertAdjacentHTML('afterbegin', alertHtml);
+
+        // Auto dismiss after 5 seconds
+        setTimeout(() => {
+            const alert = container.querySelector('.alert');
+            if (alert) {
+                alert.remove();
+            }
+        }, 5000);
+    }
+
+    // Show out of stock modal with similar books
+    function showOutOfStockModal(similarBooks) {
+        const container = document.getElementById('similarBooksContainer');
+        container.innerHTML = '';
+
+        similarBooks.forEach(book => {
+            const bookHtml = `
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <img src="${book.imageUrl}" class="card-img-top" alt="${book.title}" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h6 class="card-title">${book.title}</h6>
+                            <p class="card-text text-success">$${book.price}</p>
+                            <a href="@Url.Action("Details", "Book")?id=${book.id}" class="btn btn-primary btn-sm">View Details</a>
+                            <button onclick="addToCart(${book.id}, event)" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-cart-plus"></i> Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', bookHtml);
+        });
+
+        // Show the modal
+        const modal = new bootstrap.Modal(document.getElementById('outOfStockModal'));
+        modal.show();
+    }
+</script>

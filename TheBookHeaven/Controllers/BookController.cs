@@ -50,7 +50,7 @@ namespace TheBookHeaven.Controllers
             }
         }
 
-        // Add item to cart (for both logged-in and non-logged-in users)
+        // Updated Add item to cart with stock checking
         [HttpGet]
         public JsonResult AddToCart(int id)
         {
@@ -58,11 +58,54 @@ namespace TheBookHeaven.Controllers
             if (book == null)
                 return Json(new { success = false, message = "Book not found." });
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            // Check if book is in stock
+            if (!book.IsInStock)
+            {
+                // Get similar books for recommendation
+                var similarBooks = GetSimilarBooks(book);
+                return Json(new
+                {
+                    success = false,
+                    message = "Sorry, this book is currently out of stock.",
+                    outOfStock = true,
+                    similarBooks = similarBooks.Select(b => new {
+                        id = b.Id,
+                        title = b.Title,
+                        price = b.Price,
+                        imageUrl = b.ImageUrl
+                    }).ToList()
+                });
+            }
 
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            int currentCartQuantity = 0;
+
+            // Get current quantity in cart
+            if (string.IsNullOrEmpty(userId))
+            {
+                var cart = HttpContext.Session.GetObjectFromJson<List<CartItem>>("Cart") ?? new List<CartItem>();
+                var existingItem = cart.FirstOrDefault(ci => ci.Book?.Id == id || ci.BookId == id);
+                currentCartQuantity = existingItem?.Quantity ?? 0;
+            }
+            else
+            {
+                var existingCartItem = _context.CartItems.FirstOrDefault(c => c.UserId == userId && c.BookId == id);
+                currentCartQuantity = existingCartItem?.Quantity ?? 0;
+            }
+
+            // Check if adding one more would exceed stock
+            if (currentCartQuantity >= book.StockQuantity)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = $"Cannot add more items. Only {book.StockQuantity} available in stock."
+                });
+            }
+
+            // Add to cart logic 
             if (string.IsNullOrEmpty(userId)) // User is not logged in
             {
-                // Store cart in session for non-logged-in users
                 var cart = HttpContext.Session.GetObjectFromJson<List<CartItem>>("Cart") ?? new List<CartItem>();
                 var existingItem = cart.FirstOrDefault(ci => ci.Book?.Id == id);
 
@@ -79,7 +122,6 @@ namespace TheBookHeaven.Controllers
             }
             else // User is logged in
             {
-                // Check if item already exists in database cart
                 var existingCartItem = _context.CartItems.FirstOrDefault(c => c.UserId == userId && c.BookId == id);
 
                 if (existingCartItem != null)
@@ -103,6 +145,15 @@ namespace TheBookHeaven.Controllers
 
             var cartCount = GetCartItemCount();
             return Json(new { success = true, message = "1 item added to your cart.", cartCount = cartCount });
+        }
+
+        // Get similar books based on category
+        private List<Book> GetSimilarBooks(Book book)
+        {
+            return _context.Books
+                .Where(b => b.Category == book.Category && b.Id != book.Id && b.StockQuantity > 0)
+                .Take(3)
+                .ToList();
         }
 
         // View Cart (for both logged-in and non-logged-in users)
@@ -155,33 +206,48 @@ namespace TheBookHeaven.Controllers
             return RedirectToAction("Cart");
         }
 
-        // Updated Increase quantity method
+        // Updated Increase quantity method with stock checking
         [HttpPost]
         public JsonResult IncreaseQuantity(int id)
         {
             try
             {
+                var book = _context.Books.FirstOrDefault(b => b.Id == id);
+                if (book == null)
+                    return Json(new { success = false, message = "Book not found." });
+
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                int currentQuantity = 0;
 
                 if (string.IsNullOrEmpty(userId))
                 {
-                    // Session-based cart for non-logged-in users
                     var cart = HttpContext.Session.GetObjectFromJson<List<CartItem>>("Cart") ?? new List<CartItem>();
                     var item = cart.FirstOrDefault(ci => ci.BookId == id || (ci.Book?.Id == id));
 
                     if (item != null)
                     {
+                        currentQuantity = item.Quantity;
+                        if (currentQuantity >= book.StockQuantity)
+                        {
+                            return Json(new { success = false, message = $"Cannot add more. Only {book.StockQuantity} available." });
+                        }
+
                         item.Quantity++;
                         HttpContext.Session.SetObjectAsJson("Cart", cart);
                     }
                 }
                 else
                 {
-                    // Database cart for logged-in users
                     var cartItem = _context.CartItems.FirstOrDefault(c => c.UserId == userId && c.BookId == id);
 
                     if (cartItem != null)
                     {
+                        currentQuantity = cartItem.Quantity;
+                        if (currentQuantity >= book.StockQuantity)
+                        {
+                            return Json(new { success = false, message = $"Cannot add more. Only {book.StockQuantity} available." });
+                        }
+
                         cartItem.Quantity++;
                         _context.CartItems.Update(cartItem);
                         _context.SaveChanges();
@@ -193,13 +259,12 @@ namespace TheBookHeaven.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception for debugging
                 Console.WriteLine($"Error in IncreaseQuantity: {ex.Message}");
                 return Json(new { success = false, message = ex.Message });
             }
         }
 
-        // Updated Decrease quantity method
+        // Decrease quantity method
         [HttpPost]
         public JsonResult DecreaseQuantity(int id)
         {
@@ -209,7 +274,6 @@ namespace TheBookHeaven.Controllers
 
                 if (string.IsNullOrEmpty(userId))
                 {
-                    // Session-based cart for non-logged-in users
                     var cart = HttpContext.Session.GetObjectFromJson<List<CartItem>>("Cart") ?? new List<CartItem>();
                     var item = cart.FirstOrDefault(ci => ci.BookId == id || (ci.Book?.Id == id));
 
@@ -221,7 +285,6 @@ namespace TheBookHeaven.Controllers
                 }
                 else
                 {
-                    // Database cart for logged-in users
                     var cartItem = _context.CartItems.FirstOrDefault(c => c.UserId == userId && c.BookId == id);
 
                     if (cartItem != null && cartItem.Quantity > 1)
@@ -237,7 +300,6 @@ namespace TheBookHeaven.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception for debugging
                 Console.WriteLine($"Error in DecreaseQuantity: {ex.Message}");
                 return Json(new { success = false, message = ex.Message });
             }
@@ -256,13 +318,11 @@ namespace TheBookHeaven.Controllers
 
                     if (existingDbItem != null)
                     {
-                        // Add session quantity to existing database item
                         existingDbItem.Quantity += sessionItem.Quantity;
                         _context.CartItems.Update(existingDbItem);
                     }
                     else
                     {
-                        // Create new cart item in database
                         var newCartItem = new CartItem
                         {
                             UserId = userId,
@@ -274,7 +334,7 @@ namespace TheBookHeaven.Controllers
                 }
 
                 _context.SaveChanges();
-                HttpContext.Session.Remove("Cart"); // Clear session cart after merging
+                HttpContext.Session.Remove("Cart");
             }
         }
 
@@ -299,7 +359,7 @@ namespace TheBookHeaven.Controllers
             return View(cart);
         }
 
-        // Confirm order and save to database
+        // Confirm order with stock reduction
         [HttpPost]
         public IActionResult ConfirmOrder()
         {
@@ -309,9 +369,7 @@ namespace TheBookHeaven.Controllers
             }
 
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var userId = int.Parse(userIdClaim);
 
-            // Get cart from database for logged-in users
             var cart = _context.CartItems
                 .Include(c => c.Book)
                 .Where(c => c.UserId == userIdClaim)
@@ -319,6 +377,16 @@ namespace TheBookHeaven.Controllers
 
             if (cart.Any())
             {
+                // Check stock availability before processing order
+                foreach (var cartItem in cart)
+                {
+                    if (cartItem.Book.StockQuantity < cartItem.Quantity)
+                    {
+                        TempData["Error"] = $"Sorry, {cartItem.Book.Title} has only {cartItem.Book.StockQuantity} items in stock.";
+                        return RedirectToAction("Cart");
+                    }
+                }
+
                 decimal totalPrice = cart.Sum(item => item.Book.Price * item.Quantity);
 
                 var order = new Order
@@ -345,6 +413,10 @@ namespace TheBookHeaven.Controllers
                         };
 
                         _context.OrderItems.Add(orderItem);
+
+                        // REDUCE STOCK QUANTITY
+                        cartItem.Book.StockQuantity -= cartItem.Quantity;
+                        _context.Books.Update(cartItem.Book);
                     }
 
                     _context.SaveChanges();
@@ -353,12 +425,13 @@ namespace TheBookHeaven.Controllers
                     _context.CartItems.RemoveRange(cart);
                     _context.SaveChanges();
 
+                    TempData["Success"] = "Order placed successfully!";
                     return RedirectToAction("MyOrder", "Order");
                 }
                 catch (Exception ex)
                 {
-                    TempData["Message"] = "Order created successfully! (Order details will be available soon)";
-                    return RedirectToAction("MyOrder", "Order");
+                    TempData["Error"] = "An error occurred while processing your order.";
+                    return RedirectToAction("Cart");
                 }
             }
 
@@ -407,7 +480,6 @@ namespace TheBookHeaven.Controllers
                 _ => books.OrderBy(b => b.Title)
             };
 
-            // Get available categories for the filter dropdown
             var categories = _context.Books.Select(b => b.Category).Distinct().ToList();
 
             ViewBag.Query = query;
@@ -425,15 +497,19 @@ namespace TheBookHeaven.Controllers
             return Search("", category, sortBy);
         }
 
-        // Action for Book Details
+        // Updated Action for Book Details with similar books
         public IActionResult Details(int id)
         {
             var book = _context.Books.FirstOrDefault(b => b.Id == id);
             if (book == null)
             {
-                return NotFound(); // If the book doesn't exist
+                return NotFound();
             }
-            return View(book);  // Pass the book to the view
+
+            // Get similar books for recommendations
+            ViewBag.SimilarBooks = GetSimilarBooks(book);
+
+            return View(book);
         }
     }
 }
