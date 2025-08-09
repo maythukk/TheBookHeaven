@@ -21,10 +21,11 @@ namespace TheBookHeaven.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            // Check if the user is logged in
+            // If not logged in, still show the view but with empty data
             if (string.IsNullOrEmpty(userId))
             {
-                return RedirectToAction("Login", "Account");
+                ViewBag.NotLoggedIn = true;
+                return View(new List<Order>()); // Pass empty list instead of redirecting
             }
 
             List<Order> orders;
